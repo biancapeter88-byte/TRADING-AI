@@ -2218,118 +2218,59 @@ AI_SCHEMA = {
 # AI ANALYSIS
 # ============================================================
 
-def ai_analyze(
-    market_data
-):
+def ai_analyze(market_data):
 
     if not OPENAI_API_KEY:
 
         return {
-
-            "bias":
-                "NO_TRADE",
-
-            "confidence":
-                0,
-
-            "regime":
-                "ERROR",
-
-            "primary_setup":
-                "NONE",
-
-            "entry":
-                0,
-
-            "sl":
-                0,
-
-            "tp1":
-                0,
-
-            "tp2":
-                0,
-
-            "tp3":
-                0,
-
-            "rr":
-                0,
-
-            "trigger":
-                "",
-
-            "invalidation":
-                "",
-
-            "htf_bias":
-                "",
-
-            "intraday_bias":
-                "",
-
-            "execution_bias":
-                "",
-
-            "key_level":
-                0,
-
-            "reason":
-                "OPENAI_API_KEY is missing",
-
-            "no_trade_reason":
-                "OPENAI_API_KEY is missing"
+            "bias": "NO_TRADE",
+            "confidence": 0,
+            "regime": "AI_ERROR",
+            "primary_setup": "NONE",
+            "entry": 0,
+            "sl": 0,
+            "tp1": 0,
+            "tp2": 0,
+            "tp3": 0,
+            "rr": 0,
+            "trigger": "",
+            "invalidation": "",
+            "htf_bias": "",
+            "intraday_bias": "",
+            "execution_bias": "",
+            "key_level": 0,
+            "reason": "OPENAI_API_KEY is missing",
+            "no_trade_reason": "Add OPENAI_API_KEY to Render Environment Variables"
         }
 
 
     payload = {
+        "model": OPENAI_MODEL,
 
-        "model":
-            OPENAI_MODEL,
-
-        "instructions":
-            AI_SYSTEM_PROMPT,
+        "instructions": AI_SYSTEM_PROMPT,
 
         "input":
-
             "MARKET DATA:\n\n"
             +
-
             json.dumps(
                 market_data,
-                separators=(
-                    ",",
-                    ":"
-                )
+                separators=(",", ":")
             ),
 
         "text": {
-
             "format": {
-
-                "type":
-                    "json_schema",
-
-                "name":
-                    "trading_analysis",
-
-                "strict":
-                    True,
-
-                "schema":
-                    AI_SCHEMA
+                "type": "json_schema",
+                "name": "trading_analysis",
+                "strict": True,
+                "schema": AI_SCHEMA
             }
         }
     }
 
 
     headers = {
-
         "Authorization":
-            (
-                "Bearer "
-                + OPENAI_API_KEY
-            ),
+            f"Bearer {OPENAI_API_KEY}",
 
         "Content-Type":
             "application/json"
@@ -2339,13 +2280,9 @@ def ai_analyze(
     try:
 
         response = requests.post(
-
             OPENAI_URL,
-
             headers=headers,
-
             json=payload,
-
             timeout=120
         )
 
@@ -2353,124 +2290,64 @@ def ai_analyze(
     except requests.RequestException as e:
 
         return {
-
-            "bias":
-                "NO_TRADE",
-
-            "confidence":
-                0,
-
-            "regime":
-                "AI_ERROR",
-
-            "primary_setup":
-                "NONE",
-
-            "entry":
-                0,
-
-            "sl":
-                0,
-
-            "tp1":
-                0,
-
-            "tp2":
-                0,
-
-            "tp3":
-                0,
-
-            "rr":
-                0,
-
-            "trigger":
-                "",
-
-            "invalidation":
-                "",
-
-            "htf_bias":
-                "",
-
-            "intraday_bias":
-                "",
-
-            "execution_bias":
-                "",
-
-            "key_level":
-                0,
-
-            "reason":
-                "OpenAI connection error",
-
-            "no_trade_reason":
-                str(e)
+            "bias": "NO_TRADE",
+            "confidence": 0,
+            "regime": "CONNECTION_ERROR",
+            "primary_setup": "NONE",
+            "entry": 0,
+            "sl": 0,
+            "tp1": 0,
+            "tp2": 0,
+            "tp3": 0,
+            "rr": 0,
+            "trigger": "",
+            "invalidation": "",
+            "htf_bias": "",
+            "intraday_bias": "",
+            "execution_bias": "",
+            "key_level": 0,
+            "reason": "OpenAI connection error",
+            "no_trade_reason": str(e)
         }
 
 
+    # ========================================================
+    # SHOW THE REAL OPENAI ERROR
+    # ========================================================
+
     if response.status_code != 200:
 
+        try:
+            error_body = response.json()
+        except Exception:
+            error_body = response.text
+
         return {
-
-            "bias":
-                "NO_TRADE",
-
-            "confidence":
-                0,
-
-            "regime":
-                "AI_ERROR",
-
-            "primary_setup":
-                "NONE",
-
-            "entry":
-                0,
-
-            "sl":
-                0,
-
-            "tp1":
-                0,
-
-            "tp2":
-                0,
-
-            "tp3":
-                0,
-
-            "rr":
-                0,
-
-            "trigger":
-                "",
-
-            "invalidation":
-                "",
-
-            "htf_bias":
-                "",
-
-            "intraday_bias":
-                "",
-
-            "execution_bias":
-                "",
-
-            "key_level":
-                0,
-
-            "reason":
-                "OpenAI API error",
-
-            "no_trade_reason":
-                (
-                    f"HTTP "
-                    f"{response.status_code}: "
-                    f"{response.text[:500]}"
-                )
+            "bias": "NO_TRADE",
+            "confidence": 0,
+            "regime": "OPENAI_ERROR",
+            "primary_setup": "NONE",
+            "entry": 0,
+            "sl": 0,
+            "tp1": 0,
+            "tp2": 0,
+            "tp3": 0,
+            "rr": 0,
+            "trigger": "",
+            "invalidation": "",
+            "htf_bias": "",
+            "intraday_bias": "",
+            "execution_bias": "",
+            "key_level": 0,
+            "reason": "OpenAI API error",
+            "no_trade_reason": json.dumps(
+                {
+                    "http_status": response.status_code,
+                    "response": error_body
+                },
+                indent=2,
+                ensure_ascii=False
+            )
         }
 
 
@@ -2481,62 +2358,30 @@ def ai_analyze(
     except Exception:
 
         return {
-
-            "bias":
-                "NO_TRADE",
-
-            "confidence":
-                0,
-
-            "regime":
-                "AI_ERROR",
-
-            "primary_setup":
-                "NONE",
-
-            "entry":
-                0,
-
-            "sl":
-                0,
-
-            "tp1":
-                0,
-
-            "tp2":
-                0,
-
-            "tp3":
-                0,
-
-            "rr":
-                0,
-
-            "trigger":
-                "",
-
-            "invalidation":
-                "",
-
-            "htf_bias":
-                "",
-
-            "intraday_bias":
-                "",
-
-            "execution_bias":
-                "",
-
-            "key_level":
-                0,
-
-            "reason":
-                "Invalid JSON returned by OpenAI",
-
-            "no_trade_reason":
-                response.text[:500]
+            "bias": "NO_TRADE",
+            "confidence": 0,
+            "regime": "OPENAI_ERROR",
+            "primary_setup": "NONE",
+            "entry": 0,
+            "sl": 0,
+            "tp1": 0,
+            "tp2": 0,
+            "tp3": 0,
+            "rr": 0,
+            "trigger": "",
+            "invalidation": "",
+            "htf_bias": "",
+            "intraday_bias": "",
+            "execution_bias": "",
+            "key_level": 0,
+            "reason": "OpenAI returned invalid JSON",
+            "no_trade_reason": response.text[:2000]
         }
 
+
+    # ========================================================
+    # RESPONSE TEXT
+    # ========================================================
 
     output_text = data.get(
         "output_text"
@@ -2552,8 +2397,13 @@ def ai_analyze(
             )
 
         except Exception:
+
             pass
 
+
+    # ========================================================
+    # FALLBACK: SEARCH OUTPUT ARRAY
+    # ========================================================
 
     for item in data.get(
         "output",
@@ -2581,7 +2431,6 @@ def ai_analyze(
                     ""
                 )
 
-
                 try:
 
                     return json.loads(
@@ -2591,120 +2440,51 @@ def ai_analyze(
                 except Exception:
 
                     return {
-
-                        "bias":
-                            "NO_TRADE",
-
-                        "confidence":
-                            0,
-
-                        "regime":
-                            "AI_ERROR",
-
-                        "primary_setup":
-                            "NONE",
-
-                        "entry":
-                            0,
-
-                        "sl":
-                            0,
-
-                        "tp1":
-                            0,
-
-                        "tp2":
-                            0,
-
-                        "tp3":
-                            0,
-
-                        "rr":
-                            0,
-
-                        "trigger":
-                            "",
-
-                        "invalidation":
-                            "",
-
-                        "htf_bias":
-                            "",
-
-                        "intraday_bias":
-                            "",
-
-                        "execution_bias":
-                            "",
-
-                        "key_level":
-                            0,
-
-                        "reason":
-                            "AI JSON parsing failed",
-
-                        "no_trade_reason":
-                            text[:1000]
+                        "bias": "NO_TRADE",
+                        "confidence": 0,
+                        "regime": "JSON_ERROR",
+                        "primary_setup": "NONE",
+                        "entry": 0,
+                        "sl": 0,
+                        "tp1": 0,
+                        "tp2": 0,
+                        "tp3": 0,
+                        "rr": 0,
+                        "trigger": "",
+                        "invalidation": "",
+                        "htf_bias": "",
+                        "intraday_bias": "",
+                        "execution_bias": "",
+                        "key_level": 0,
+                        "reason": "AI JSON parsing failed",
+                        "no_trade_reason": text[:2000]
                     }
 
 
     return {
-
-        "bias":
-            "NO_TRADE",
-
-        "confidence":
-            0,
-
-        "regime":
-            "AI_ERROR",
-
-        "primary_setup":
-            "NONE",
-
-        "entry":
-            0,
-
-        "sl":
-            0,
-
-        "tp1":
-            0,
-
-        "tp2":
-            0,
-
-        "tp3":
-            0,
-
-        "rr":
-            0,
-
-        "trigger":
-            "",
-
-        "invalidation":
-            "",
-
-        "htf_bias":
-            "",
-
-        "intraday_bias":
-            "",
-
-        "execution_bias":
-            "",
-
-        "key_level":
-            0,
-
-        "reason":
-            "No AI output",
-
-        "no_trade_reason":
-            "OpenAI returned no usable output"
+        "bias": "NO_TRADE",
+        "confidence": 0,
+        "regime": "OPENAI_ERROR",
+        "primary_setup": "NONE",
+        "entry": 0,
+        "sl": 0,
+        "tp1": 0,
+        "tp2": 0,
+        "tp3": 0,
+        "rr": 0,
+        "trigger": "",
+        "invalidation": "",
+        "htf_bias": "",
+        "intraday_bias": "",
+        "execution_bias": "",
+        "key_level": 0,
+        "reason": "No AI output",
+        "no_trade_reason": json.dumps(
+            data,
+            indent=2,
+            ensure_ascii=False
+        )[:4000]
     }
-
 
 # ============================================================
 # SYMBOL ANALYSIS
