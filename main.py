@@ -2927,7 +2927,60 @@ def single_symbol(
         normalized
     )
 
+@app.get("/test-openai")
+def test_openai():
 
+    if not OPENAI_API_KEY:
+        return {
+            "success": False,
+            "error": "OPENAI_API_KEY is missing from Render"
+        }
+
+    payload = {
+        "model": OPENAI_MODEL,
+        "input": "Reply with exactly: OPENAI_OK"
+    }
+
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+
+        response = requests.post(
+            "https://api.openai.com/v1/responses",
+            headers=headers,
+            json=payload,
+            timeout=60
+        )
+
+        try:
+            body = response.json()
+        except Exception:
+            body = response.text
+
+        return {
+            "success":
+                response.status_code == 200,
+
+            "http_status":
+                response.status_code,
+
+            "model":
+                OPENAI_MODEL,
+
+            "response":
+                body
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "error_type": type(e).__name__,
+            "error": str(e)
+        }
 # ============================================================
 # DASHBOARD DATA
 # ============================================================
